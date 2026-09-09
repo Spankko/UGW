@@ -1,5 +1,5 @@
 # UGW
-# 🔫 FiveM DM Scripts (QBCore)
+# 🔫 FiveM Death Match Scripts (QBCore)
 
 Este repositório contém uma coleção de scripts desenvolvidos para servidores de **FiveM** com foco em **DM (Deathmatch)**, utilizando a base **QBCore**. 
 
