@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="scoreboard-wrapper" style="display: none;">
+        <div class="scoreboard-header">
+            <div class="server-title"><span class="yellow">UGW</span><span class="red">DM</span> - PLACAR DA SESSÃO</div>
+            <div class="player-count">ONLINE: <span id="online-count">0</span></div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>JOGADOR</th>
+                        <th>EQUIPE</th>
+                        <th>KILLS</th>
+                        <th>MORTES</th>
+                        <th>K/D</th>
+                        <th>PING</th>
+                    </tr>
+                </thead>
+                <tbody id="player-rows">
+                    <!-- Preenchido via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

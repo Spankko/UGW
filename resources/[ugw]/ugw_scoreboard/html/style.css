@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background: transparent;
+    font-family: 'Rubik', sans-serif;
+}
+
+#scoreboard-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 750px;
+    max-height: 80vh;
+    background: rgba(15, 15, 20, 0.92);
+    border: 2px solid rgba(255, 204, 0, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.scoreboard-header {
+    background: rgba(25, 25, 35, 0.95);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #FFCC00;
+}
+
+.server-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #FFF;
+    letter-spacing: 1px;
+}
+
+.yellow { color: #FFCC00; }
+.red { color: #CC0000; }
+
+.player-count {
+    color: #AAA;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.table-container {
+    overflow-y: auto;
+    max-height: 400px;
+    padding: 10px;
+}
+
+.table-container::-webkit-scrollbar {
+    width: 6px;
+}
+.table-container::-webkit-scrollbar-thumb {
+    background: #FFCC00;
+    border-radius: 3px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    color: #FFF;
+}
+
+th {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFCC00;
+}
+
+td {
+    padding: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+tr:hover {
+    background: rgba(255, 204, 0, 0.08);
+}
+
+.kd-positive {
+    color: #2ecc71;
+    font-weight: bold;
+}

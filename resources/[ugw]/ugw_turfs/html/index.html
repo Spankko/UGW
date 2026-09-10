@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGW Turfs UI</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: none; /* Controlado via NUI Lua */
+        }
+
+        #turf-hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 15, 15, 0.85);
+            border-left: 4px solid #ffcc00;
+            color: #ffffff;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            width: 250px;
+        }
+
+        .turf-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffcc00;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .turf-info {
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #cccccc;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #ffcc00;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="turf-hud">
+        <div class="turf-title" id="turf-name">Área Neutra</div>
+        <div class="turf-info">Dono: <span id="turf-owner">Ninguém</span></div>
+        <div class="turf-info">Dominação: <span id="turf-progress">0%</span></div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        // Listener para receber dados do client.lua via SendNuiMessage
+        window.addEventListener('message', function(event) {
+            let data = event.data;
+
+            if (data.action === "toggleHud") {
+                document.body.style.display = data.show ? "block" : "none";
+            } else if (data.action === "updateHud") {
+                document.getElementById('turf-name').innerText = data.name;
+                document.getElementById('turf-owner').innerText = data.owner ? data.owner.toUpperCase() : "LIVRE";
+                document.getElementById('turf-progress').innerText = data.progress + "%";
+                document.getElementById('progress-fill').style.width = data.progress + "%";
+            }
+        });
+    </script>
+</body>
+</html>
