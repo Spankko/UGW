@@ -27,16 +27,17 @@ QBCore.Functions.CreateCallback('ugw_scoreboard:getPlayers', function(source, cb
             exports.oxmysql:execute('SELECT kills, deaths FROM ugw_player_stats WHERE user_id = ?', { citizenId }, function(result)
                 local kills = (result[1] and result[1].kills) or 0
                 local deaths = (result[1] and result[1].deaths) or 0
-                local kd = deaths > 0 and string.format("%.2f", kills / deaths) or string.format("%.2f", kills)
+                local kd = string.format("%d/%d", kills, deaths)
 
                 table.insert(players, {
                     id = src,
                     name = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
                     gang = string.upper(gangName),
-                    kills = kills,
+					kills = kills,
                     deaths = deaths,
                     kd = kd,
-                    ping = ping
+                    ping = ping,
+					cash = Player.PlayerData.money.cash or 0
                 })
 
                 processedPlayers = processedPlayers + 1

@@ -7,12 +7,13 @@ window.addEventListener('message', function(event) {
 
         let rowsHTML = '';
         data.players.forEach(player => {
-            let kdClass = parseFloat(player.kd) >= 1.0 ? 'kd-positive' : '';
+            let kdClass = '';
             rowsHTML += `
                 <tr>
                     <td>#${player.id}</td>
                     <td>${player.name}</td>
                     <td>${player.gang}</td>
+					<td>R$ ${Number(player.cash || 0).toLocaleString('pt-BR')}</td>
                     <td style="color: #2ecc71;">${player.kills}</td>
                     <td style="color: #e74c3c;">${player.deaths}</td>
                     <td class="${kdClass}">${player.kd}</td>

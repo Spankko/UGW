@@ -57,7 +57,7 @@ QBCore.Functions.CreateCallback('ugw_scoreboard:server:getScoreboardData', funct
             MySQL.single('SELECT kills, deaths FROM player_dm_stats WHERE citizenid = ?', { citizenid }, function(result)
                 local kills = result and result.kills or 0
                 local deaths = result and result.deaths or 0
-                local kd = deaths > 0 and string.format("%.2f", kills / deaths) or string.format("%.2f", kills)
+                local kd = string.format("%d/%d", kills, deaths)
 
                 table.insert(playersList, {
                     id = tonumber(playerId),
@@ -66,7 +66,8 @@ QBCore.Functions.CreateCallback('ugw_scoreboard:server:getScoreboardData', funct
                     kills = kills,
                     deaths = deaths,
                     kd = kd,
-                    gang = Player.PlayerData.gang.label or "Nenhuma"
+                    gang = Player.PlayerData.gang.label or "Nenhuma",
+					cash = Player.PlayerData.money.cash or 0
                 })
 
                 if #playersList == #activePlayers then
@@ -113,7 +114,7 @@ QBCore.Commands.Add('stats', 'Visualizar suas estatísticas de Mata-Mata', {}, f
     MySQL.single('SELECT kills, deaths FROM player_dm_stats WHERE citizenid = ?', { citizenid }, function(result)
         local kills = result and result.kills or 0
         local deaths = result and result.deaths or 0
-        local kd = deaths > 0 and string.format("%.2f", kills / deaths) or string.format("%.2f", kills)
+        local kd = string.format("%d/%d", kills, deaths)
 
         TriggerClientEvent('chat:addMessage', src, {
             color = {255, 204, 0},
@@ -145,7 +146,7 @@ QBCore.Commands.Add('statsid', 'Visualizar estatísticas de outro jogador', { { 
     MySQL.single('SELECT kills, deaths FROM player_dm_stats WHERE citizenid = ?', { citizenid }, function(result)
         local kills = result and result.kills or 0
         local deaths = result and result.deaths or 0
-        local kd = deaths > 0 and string.format("%.2f", kills / deaths) or string.format("%.2f", kills)
+        local kd = string.format("%d/%d", kills, deaths)
 
         TriggerClientEvent('chat:addMessage', src, {
             color = {255, 204, 0},
