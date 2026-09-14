@@ -1,43 +1,70 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
 local TurfData = {}
-local GangColors = {}
+local DynamicGangColors = {}
+local AvailableBlipColors = { 83, 25, 46, 38, 1, 5, 2, 3, 4, 6, 7, 8, 9, 11, 15, 17, 18, 21, 26, 27 }
 
--- Inicialização e carregamento dos dados do MySQL
-AddEventHandler('onResourceStart', function(resource)
-    if resource ~= GetCurrentResourceName() then return end
+local function GetGangColor(gangName)
+    if not gangName or gangName == "none" then return 0 end
+    
+    if DynamicGangColors[gangName] then
+        return DynamicGangColors[gangName]
+    end
 
-    if Config and Config.Turfs then
-        for id, _ in pairs(Config.Turfs) do
-            TurfData[id] = { points = {}, owner = nil }
+    if QBCore.Shared and QBCore.Shared.Gangs and QBCore.Shared.Gangs[gangName] then
+        local qbGang = QBCore.Shared.Gangs[gangName]
+        if qbGang.color then
+            DynamicGangColors[gangName] = qbGang.color
+            return DynamicGangColors[gangName]
         end
     end
 
-    local result = MySQL.query.await('SELECT * FROM gang_turfs', {})
-    if result then
-        for _, v in ipairs(result) do
-            local tid = tonumber(v.turf_id)
-            if Config.Turfs[tid] then
-                Config.Turfs[tid].owner = v.owner_gang
-                TurfData[tid].owner = v.owner_gang
+    local hash = 0
+    for i = 1, #gangName do
+        hash = hash + string.byte(gangName, i)
+    end
+    local colorIndex = (hash % #AvailableBlipColors) + 1
+    DynamicGangColors[gangName] = AvailableBlipColors[colorIndex]
+
+    return DynamicGangColors[gangName]
+end
+
+local function LoadTurfsFromDB()
+    for id, _ in pairs(Config.Turfs) do
+        TurfData[id] = { owner = nil, points = {} }
+    end
+
+    MySQL.query('SELECT * FROM gang_turfs', {}, function(result)
+        if result and #result > 0 then
+            for _, row in ipairs(result) do
+                local turfId = tonumber(row.turf_id)
+                if Config.Turfs[turfId] then
+                    local owner = row.owner_gang
+                    Config.Turfs[turfId].owner = owner
+                    TurfData[turfId].owner = owner
+                    if owner then GetGangColor(owner) end
+                end
             end
         end
-    end
+        print('^2[UGW Turfs] Territórios e Gangues Dinâmicas sincronizados com sucesso!^7')
+        TriggerClientEvent('ugw_turfs:client:syncTurfs', -1, Config.Turfs, DynamicGangColors)
+    end)
+end
 
-    local colorsResult = MySQL.query.await('SELECT gang_name, color_id FROM gang_colors', {})
-    if colorsResult then
-        for _, v in ipairs(colorsResult) do
-            GangColors[v.gang_name] = tonumber(v.color_id)
-        end
-    end
-
-    Wait(1000)
-    TriggerClientEvent('ugw_turfs:client:syncTurfs', -1, Config.Turfs, GangColors)
+AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName then return end
+    LoadTurfsFromDB()
 end)
 
 RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function()
     local src = source
-    TriggerClientEvent('ugw_turfs:client:syncTurfs', src, Config.Turfs, GangColors)
+    TriggerClientEvent('ugw_turfs:client:syncTurfs', src, Config.Turfs, DynamicGangColors)
+end)
+
+-- Permite ao cliente solicitar a lista a qualquer momento (evita tela em branco no restart)
+RegisterNetEvent('ugw_turfs:server:requestSync', function()
+    local src = source
+    TriggerClientEvent('ugw_turfs:client:syncTurfs', src, Config.Turfs, DynamicGangColors)
 end)
 
 RegisterNetEvent('ugw_turfs:server:enterTurf', function(turfId)
@@ -45,105 +72,77 @@ RegisterNetEvent('ugw_turfs:server:enterTurf', function(turfId)
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player or not Config.Turfs[turfId] then return end
 
-    local gang = Player.PlayerData.gang.name
-    if gang and gang ~= "none" then
-        TriggerClientEvent('QBCore:Notify', src, 'Entrou na área: ' .. Config.Turfs[turfId].name, 'primary')
-    end
+    local turf = Config.Turfs[turfId]
+    local owner = turf.owner or "Nenhum"
+    local gangName = Player.PlayerData.gang and Player.PlayerData.gang.name or "none"
+    local currentPoints = (TurfData[turfId] and TurfData[turfId].points[gangName]) or 0
+
+    TriggerClientEvent('ugw_turfs:client:updateHud', src, turf.name, owner, currentPoints)
 end)
 
-RegisterNetEvent('ugw_turfs:server:leaveTurf', function(turfId)
+RegisterNetEvent('ugw_turfs:server:onPlayerKill', function(turfId)
     local src = source
-    if not Config.Turfs[turfId] then return end
-    TriggerClientEvent('QBCore:Notify', src, 'Saiu de: ' .. Config.Turfs[turfId].name, 'error')
-end)
+    local Player = QBCore.Functions.GetPlayer(src)
+    if not Player or not turfId or not Config.Turfs[turfId] then return end
 
--- Pontos por permanência (a cada 1 minuto)
-CreateThread(function()
-    while true do
-        Wait(60000)
+    local gangName = Player.PlayerData.gang and Player.PlayerData.gang.name or "none"
+    if not gangName or gangName == "none" or gangName == "unemployed" then return end
 
-        if Config and Config.Turfs then
-            for turfId, turfInfo in pairs(Config.Turfs) do
-                local playersInZone = {}
+    TurfData[turfId].points[gangName] = (TurfData[turfId].points[gangName] or 0) + 15
+    local currentPoints = TurfData[turfId].points[gangName]
 
-                for _, playerId in ipairs(QBCore.Functions.GetPlayers()) do
-                    local Player = QBCore.Functions.GetPlayer(playerId)
-                    if Player then
-                        local ped = GetPlayerPed(playerId)
-                        local coords = GetEntityCoords(ped)
-                        
-                        local halfW = turfInfo.width / 2.0
-                        local halfH = turfInfo.height / 2.0
-                        
-                        if (coords.x >= (turfInfo.coords.x - halfW) and coords.x <= (turfInfo.coords.x + halfW)) and
-                           (coords.y >= (turfInfo.coords.y - halfH) and coords.y <= (turfInfo.coords.y + halfH)) then
-                            
-                            local gang = Player.PlayerData.gang.name
-                            if gang and gang ~= "none" then
-                                playersInZone[gang] = (playersInZone[gang] or 0) + 1
-                            end
-                        end
-                    end
-                end
+    TriggerClientEvent('ugw_turfs:client:updateHud', src, Config.Turfs[turfId].name, Config.Turfs[turfId].owner or "Nenhum", currentPoints)
 
-                for gangName, count in pairs(playersInZone) do
-                    TurfData[turfId].points[gangName] = (TurfData[turfId].points[gangName] or 0) + (count * 10)
+    if currentPoints >= 100 and TurfData[turfId].owner ~= gangName then
+        TurfData[turfId].owner = gangName
+        Config.Turfs[turfId].owner = gangName
+        GetGangColor(gangName)
 
-                    if TurfData[turfId].points[gangName] >= 100 and TurfData[turfId].owner ~= gangName then
-                        TurfData[turfId].owner = gangName
-                        Config.Turfs[turfId].owner = gangName
+        MySQL.insert('INSERT INTO gang_turfs (turf_id, owner_gang) VALUES (?, ?) ON DUPLICATE KEY UPDATE owner_gang = ?', {
+            turfId, gangName, gangName
+        })
 
-                        MySQL.insert('INSERT INTO gang_turfs (turf_id, owner_gang) VALUES (?, ?) ON DUPLICATE KEY UPDATE owner_gang = ?', {
-                            turfId, gangName, gangName
-                        })
-
-                        TriggerClientEvent('QBCore:Notify', -1, 'A gangue ' .. string.upper(gangName) .. ' dominou o território: ' .. turfInfo.name, 'success')
-                        TriggerClientEvent('ugw_turfs:client:syncTurfs', -1, Config.Turfs, GangColors)
-                    end
-                end
-            end
-        end
+        TriggerClientEvent('QBCore:Notify', -1, 'A gangue ' .. string.upper(gangName) .. ' dominou o território: ' .. Config.Turfs[turfId].name, 'success')
+        TriggerClientEvent('ugw_turfs:client:syncTurfs', -1, Config.Turfs, DynamicGangColors)
     end
 end)
 
--- Bônus de pontos por Kill
-RegisterNetEvent('ugw_turfs:server:onPlayerKill', function(killerSrc, turfId)
-    local Killer = QBCore.Functions.GetPlayer(killerSrc)
-    if not Killer or not Config.Turfs[turfId] then return end
+-- Comando Administrativo para definir o dono de um território
+QBCore.Commands.Add('setturf', 'Definir o dono de um território (Apenas Admin)', {
+    { name = 'id', help = 'ID do Território (1 a 72)' },
+    { name = 'gangue', help = 'Nome da gangue (ex: ballas, vagos) ou none para limpar' }
+}, true, function(source, args)
+    local turfId = tonumber(args[1])
+    local gangName = tolower and tolower(args[2]) or string.lower(args[2] or "")
 
-    local killerGang = Killer.PlayerData.gang.name
-    if killerGang and killerGang ~= "none" then
-        TurfData[turfId].points[killerGang] = (TurfData[turfId].points[killerGang] or 0) + 25
+    if not turfId or not Config.Turfs[turfId] then
+        TriggerClientEvent('QBCore:Notify', source, 'ID de território inválido!', 'error')
+        return
+    end
+
+    if gangName == "" then
+        TriggerClientEvent('QBCore:Notify', source, 'Especifique o nome da gangue!', 'error')
+        return
+    end
+
+    -- Se for "none" ou "nenhum", remove o dono
+    if gangName == "none" or gangName == "nenhum" then
+        TurfData[turfId].owner = nil
+        Config.Turfs[turfId].owner = nil
         
-        TriggerClientEvent('QBCore:Notify', killerSrc, '+25 pontos para a gangue ' .. string.upper(killerGang) .. ' (Inimigo abatido)!', 'success')
+        MySQL.query('DELETE FROM gang_turfs WHERE turf_id = ?', { turfId })
+        TriggerClientEvent('QBCore:Notify', source, 'Território ' .. turfId .. ' resetado para Neutro.', 'primary')
+    else
+        TurfData[turfId].owner = gangName
+        Config.Turfs[turfId].owner = gangName
+        GetGangColor(gangName) -- Garante que a gangue ganhe uma cor registrada
 
-        if TurfData[turfId].points[killerGang] >= 100 and TurfData[turfId].owner ~= killerGang then
-            TurfData[turfId].owner = killerGang
-            Config.Turfs[turfId].owner = killerGang
-
-            MySQL.insert('INSERT INTO gang_turfs (turf_id, owner_gang) VALUES (?, ?) ON DUPLICATE KEY UPDATE owner_gang = ?', {
-                turfId, killerGang, killerGang
-            })
-
-            TriggerClientEvent('QBCore:Notify', -1, 'A gangue ' .. string.upper(killerGang) .. ' tomou o território: ' .. Config.Turfs[turfId].name, 'success')
-            TriggerClientEvent('ugw_turfs:client:syncTurfs', -1, Config.Turfs, GangColors)
-        end
+        MySQL.insert('INSERT INTO gang_turfs (turf_id, owner_gang) VALUES (?, ?) ON DUPLICATE KEY UPDATE owner_gang = ?', {
+            turfId, gangName, gangName
+        })
+        TriggerClientEvent('QBCore:Notify', source, 'Território ' .. turfId .. ' definido para: ' .. string.upper(gangName), 'success')
     end
-end)
 
--- Recompensas periódicas por hora
-CreateThread(function()
-    while true do
-        Wait(3600000)
-
-        if Config and Config.Turfs then
-            for id, turf in pairs(Config.Turfs) do
-                if turf.owner then
-                    local rewardAmount = 5000
-                    MySQL.update('UPDATE gang_funds SET money = money + ? WHERE gang_name = ?', { rewardAmount, turf.owner })
-                    print('^2[UGW_TURFS]^7 Recompensa de R$ ' .. rewardAmount .. ' adicionada ao cofre da gangue ' .. turf.owner .. ' pelo território ' .. turf.name)
-                end
-            end
-        end
-    end
-end)
+    -- Sincroniza as mudanças com todos os jogadores conectados
+    TriggerClientEvent('ugw_turfs:client:syncTurfs', -1, Config.Turfs, DynamicGangColors)
+end, 'admin')

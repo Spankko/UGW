@@ -1,0 +1,6 @@
+// Local: JetSam Terminal | Bairro/Zona: Terminal
+vector3(779.04, -3001.77, 6.03), -- Heading: 135.25
+
+// Local: La Fuente Blanca BASE | Bairro/Zona: Vinewood Hills
+vector3(1310.16, 1106.24, 105.69), -- Heading: 60.05
+

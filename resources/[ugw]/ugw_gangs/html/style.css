@@ -1,0 +1,241 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    user-select: none;
+}
+
+body {
+    background: transparent !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    pointer-events: auto;
+}
+
+.container {
+    width: 950px;
+    background: #121317;
+    border: 1px solid #23262d;
+    border-radius: 8px;
+    padding: 20px;
+    color: #e1e1e6;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+    display: none;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #23262d;
+    padding-bottom: 12px;
+}
+
+.gang-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-icon {
+    font-size: 1.5rem;
+    color: #e53935;
+}
+
+.gang-title h1 {
+    font-size: 1.3rem;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.badge {
+    background: #e53935;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: #8d92a1;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.close-btn:hover { color: #fff; }
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 15px 0;
+}
+
+.card {
+    background: #181a20;
+    border: 1px solid #282b34;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stat-card i { font-size: 1.8rem; }
+.color-gold { color: #fbc02d; }
+.color-blue { color: #29b6f6; }
+.color-red { color: #ef5350; }
+.color-green { color: #66bb6a; }
+
+.stat-info .label {
+    font-size: 0.75rem;
+    color: #8d92a1;
+}
+
+.stat-info h2 {
+    font-size: 1rem;
+    margin-top: 2px;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+}
+
+.section-card h3 {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    color: #b3b9c5;
+}
+
+.table-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #23262d;
+}
+
+th { color: #787f91; }
+
+.status-online { color: #66bb6a; font-weight: bold; }
+.status-offline { color: #ef5350; font-weight: bold; }
+
+.action-btn-sm {
+    background: #23262d;
+    border: none;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 2px;
+}
+
+.action-btn-sm:hover { background: #323742; }
+
+.bank-inputs, .invite-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+input {
+    background: #111215;
+    border: 1px solid #282b34;
+    padding: 8px;
+    border-radius: 4px;
+    color: #fff;
+    outline: none;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 0.85rem;
+}
+
+.btn-full { width: 100%; margin-top: 10px; }
+.btn-green { background: #2e7d32; color: #fff; }
+.btn-green:hover { background: #388e3c; }
+.btn-red { background: #c62828; color: #fff; }
+.btn-red:hover { background: #d32f2f; }
+.btn-blue { background: #1565c0; color: #fff; }
+.btn-blue:hover { background: #1e88e5; }
+.btn-close { background: #2c303b; color: #fff; }
+
+.war-stats-box {
+    margin-top: 10px;
+    padding: 10px;
+    background: #111215;
+    border-radius: 4px;
+}
+
+.war-stats-box h4 {
+    margin-bottom: 8px;
+    color: #ef5350;
+    font-size: 0.85rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+.create-card {
+    background: #181a20;
+    border: 1px solid #282b34;
+    padding: 25px;
+    border-radius: 6px;
+    max-width: 500px;
+    margin: 20px auto;
+}
+
+.create-card h2 { margin-bottom: 10px; font-size: 1.1rem; }
+.create-card p { font-size: 0.85rem; color: #8d92a1; margin-bottom: 15px; }
+.input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.cost-info { margin-top: 10px; color: #fbc02d; font-size: 0.9rem; }
+
+.panel-footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+}

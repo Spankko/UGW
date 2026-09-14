@@ -1,49 +1,91 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local currentTurf = nil
 local TurfBlips = {}
+local TurfPolyZones = {}
 local DynamicGangColors = {}
 
--- Cor 0 representa o branco/neutro padrão do mapa para áreas livres
-local DEFAULT_NEUTRAL_COLOR = 0 
+-- ID 4 é a cor branca/cinza visível para áreas neutras (ID 0 é transparente no GTA)
+local DEFAULT_NEUTRAL_COLOR = 4 
 
--- Função para verificar se a coordenada está dentro do quadrado (Polyzone customizada)
-local function IsInSquareArea(pCoords, turfCoords, width, height)
-    local halfW = width / 2.0
-    local halfH = height / 2.0
-    
-    return (pCoords.x >= (turfCoords.x - halfW) and pCoords.x <= (turfCoords.x + halfW)) and
-           (pCoords.y >= (turfCoords.y - halfH) and pCoords.y <= (turfCoords.y + halfH))
+local function ParsePoints(points)
+    local result = {}
+    if not points then return result end
+    for i = 1, #points do
+        local p = points[i]
+        if type(p) == "vector2" then
+            table.insert(result, vector2(p.x, p.y))
+        elseif type(p) == "table" and p.x and p.y then
+            table.insert(result, vector2(tonumber(p.x), tonumber(p.y)))
+        end
+    end
+    return result
 end
 
--- Atualiza ou cria apenas as áreas (Polyzone retangular) no mapa, sem ícones de caveira
-local function UpdateTurfBlips(turfs)
-    for id, turf in pairs(turfs) do
-        if not TurfBlips[id] then
-            local blip = AddBlipForArea(turf.coords.x, turf.coords.y, turf.coords.z, turf.width, turf.height)
-            SetBlipRotation(blip, 0)
-            SetBlipAlpha(blip, 90) -- Opacidade ajustada para um visual translúcido limpo
-            TurfBlips[id] = blip
+local function BuildTurfBlips()
+    -- Limpa Blips anteriores para evitar duplicação
+    for id, blip in pairs(TurfBlips) do
+        if DoesBlipExist(blip) then
+            RemoveBlip(blip)
         end
+    end
+    TurfBlips = {}
+    TurfPolyZones = {}
 
-        local color = DEFAULT_NEUTRAL_COLOR
-        if turf.owner and DynamicGangColors[turf.owner] then
-            color = DynamicGangColors[turf.owner]
-        elseif turf.owner then
-            color = 1 -- Cor padrão de dominação caso a facção não tenha cor customizada
+    if not Config or not Config.Turfs then return end
+
+    for id, turf in pairs(Config.Turfs) do
+        local points = ParsePoints(turf.points)
+        
+        if #points >= 3 then
+            -- Cria a zona do PolyZone para detecção de presença de jogador
+            TurfPolyZones[id] = PolyZone:Create(points, {
+                name = "turf_" .. id,
+                minZ = -100.0,
+                maxZ = 800.0,
+                debugPoly = false
+            })
+
+            -- Calcula o centro e as dimensões da caixa
+            local minX, maxX = 99999.0, -99999.0
+            local minY, maxY = 99999.0, -99999.0
+
+            for i = 1, #points do
+                if points[i].x < minX then minX = points[i].x end
+                if points[i].x > maxX then maxX = points[i].x end
+                if points[i].y < minY then minY = points[i].y end
+                if points[i].y > maxY then maxY = points[i].y end
+            end
+
+            local width = math.abs(maxX - minX)
+            local height = math.abs(maxY - minY)
+            local centerX = minX + (width / 2.0)
+            local centerY = minY + (height / 2.0)
+
+            -- Cria o Blip de Área no Mapa
+            local areaBlip = AddBlipForArea(centerX, centerY, 0.0, width, height)
+            SetBlipRotation(areaBlip, 0)
+            SetBlipAlpha(areaBlip, 140) -- Opacidade da cor (0 a 255)
+            SetBlipDisplay(areaBlip, 4) -- Exibe no mini-mapa e mapa principal
+            SetBlipAsShortRange(areaBlip, false)
+
+            -- Define a cor baseada no dono da gangue ou na cor neutra
+            local color = DEFAULT_NEUTRAL_COLOR
+            if turf.owner and DynamicGangColors[turf.owner] then
+                color = DynamicGangColors[turf.owner]
+            end
+            SetBlipColour(areaBlip, color)
+
+            TurfBlips[id] = areaBlip
         end
-
-        SetBlipColour(TurfBlips[id], color)
     end
 end
 
--- Sincronização vinda do servidor
 RegisterNetEvent('ugw_turfs:client:syncTurfs', function(turfsData, gangColorsData)
     Config.Turfs = turfsData
     DynamicGangColors = gangColorsData or {}
-    UpdateTurfBlips(turfsData)
+    BuildTurfBlips()
 end)
 
--- Evento para atualizar os dados na HUD visual (HTML)
 RegisterNetEvent('ugw_turfs:client:updateHud', function(turfName, owner, progress)
     SendNUIMessage({
         action = "updateHud",
@@ -53,61 +95,53 @@ RegisterNetEvent('ugw_turfs:client:updateHud', function(turfName, owner, progres
     })
 end)
 
--- Thread para checar entrada e saída dos territórios
+-- Sincroniza ao ligar o recurso ou quando o jogador loga
+AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName then return end
+    Wait(500)
+    TriggerServerEvent('ugw_turfs:server:requestSync')
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    Wait(1000)
+    TriggerServerEvent('ugw_turfs:server:requestSync')
+end)
+
+-- Loop de verificação de entrada/saída de territórios
 CreateThread(function()
     while true do
         local sleep = 1000
-        local pCoords = GetEntityCoords(PlayerPedId())
-        local inside = false
+        local ped = PlayerPedId()
 
-        for id, turf in pairs(Config.Turfs) do
-            if IsInSquareArea(pCoords, turf.coords, turf.width, turf.height) then
-                inside = true
-                sleep = 500
-                if currentTurf ~= id then
-                    currentTurf = id
-                    -- Mostra a HUD na tela e envia os dados iniciais
-                    SendNUIMessage({ action = "toggleHud", show = true })
-                    TriggerServerEvent('ugw_turfs:server:enterTurf', id)
+        if DoesEntityExist(ped) then
+            local pCoords = GetEntityCoords(ped)
+            local insideTurfId = nil
+
+            for id, poly in pairs(TurfPolyZones) do
+                if poly and poly.isPointInside and poly:isPointInside(pCoords) then
+                    insideTurfId = id
+                    sleep = 500
+                    break
                 end
-                break
             end
-        end
 
-        if not inside and currentTurf then
-            -- Oculta a HUD quando sai da área
-            SendNUIMessage({ action = "toggleHud", show = false })
-            TriggerServerEvent('ugw_turfs:server:leaveTurf', currentTurf)
-            currentTurf = nil
+            if insideTurfId and currentTurf ~= insideTurfId then
+                currentTurf = insideTurfId
+                SendNUIMessage({ action = "toggleHud", show = true })
+                TriggerServerEvent('ugw_turfs:server:enterTurf', insideTurfId)
+            elseif not insideTurfId and currentTurf then
+                SendNUIMessage({ action = "toggleHud", show = false })
+                TriggerServerEvent('ugw_turfs:server:leaveTurf', currentTurf)
+                currentTurf = nil
+            end
         end
 
         Wait(sleep)
     end
 end)
 
--- Detecção de abate/kill dentro da área
-AddEventHandler('gameEventTriggered', function(event, data)
-    if event == "CEventNetworkEntityDamage" then
-        local victim = data[1]
-        local killer = data[2]
-        local isDead = IsEntityDead(victim)
-
-        if isDead and IsPedAPlayer(victim) and IsPedAPlayer(killer) then
-            local victimPlayer = NetworkGetPlayerIndexFromPed(victim)
-            local killerPlayer = NetworkGetPlayerIndexFromPed(killer)
-
-            if victimPlayer == PlayerId() or killerPlayer == PlayerId() then
-                local pCoords = GetEntityCoords(PlayerPedId())
-
-                for id, turf in pairs(Config.Turfs) do
-                    if IsInSquareArea(pCoords, turf.coords, turf.width, turf.height) then
-                        if killerPlayer == PlayerId() then
-                            TriggerServerEvent('ugw_turfs:server:onPlayerKill', GetPlayerServerId(killerPlayer), id)
-                        end
-                        break
-                    end
-                end
-            end
-        end
-    end
-end)
+-- Comando manual de teste
+RegisterCommand('testeturf', function()
+    TriggerServerEvent('ugw_turfs:server:requestSync')
+    QBCore.Functions.Notify('Recarregando blips de territórios...', 'success')
+end, false)

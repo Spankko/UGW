@@ -1,24 +1,27 @@
 fx_version 'cerulean'
 game 'gta5'
 
-author 'Gustavo Spankko & HanzoBR'
+author 'Spankko & HanzoBR'
 description 'Sistema Integrado de Territórios, Gangues e Interface - UGW'
-version '1.1.0'
+version '1.2.1'
 
-fx_version 'cerulean'
-game 'gta5'
-
-ui_page 'html/index.html'
+dependencies {
+    'qb-core',
+    'oxmysql',
+    'PolyZone'
+}
 
 shared_scripts {
+    'config.lua',
+    '@ugw_turfs/turfs.lua'
+}
+
+client_scripts {
     '@PolyZone/client.lua',
     '@PolyZone/BoxZone.lua',
     '@PolyZone/EntityZone.lua',
     '@PolyZone/CircleZone.lua',
-    'turfs.lua'
-}
-
-client_scripts {
+    '@PolyZone/ComboZone.lua',
     'client.lua'
 }
 
@@ -28,5 +31,9 @@ server_scripts {
 }
 
 files {
-    'html/index.html'
+    'html/ui.html',
+    'html/style.css',
+    'html/script.js'
 }
+
+ui_page 'html/ui.html'

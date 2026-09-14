@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: none; /* Controlado via NUI Lua */
+            display: none;
         }
 
         #turf-hud {
@@ -68,7 +68,6 @@
     </div>
 
     <script>
-        // Listener para receber dados do client.lua via SendNuiMessage
         window.addEventListener('message', function(event) {
             let data = event.data;
 

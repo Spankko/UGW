@@ -1,0 +1,249 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#property-hud {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hud-container {
+    width: 620px;
+    max-height: 85vh;
+    background: rgba(15, 15, 18, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+    color: #fff;
+    overflow: hidden;
+}
+
+.hud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #999;
+    margin-bottom: 6px;
+}
+
+.hud-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.close-button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.property-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 20px 28px;
+}
+
+.info-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.info-box span {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.info-box strong {
+    display: block;
+    font-size: 18px;
+}
+
+.info-box.highlight strong {
+    color: #2ecc71;
+}
+
+.available-message {
+    margin: 0 28px 18px;
+    padding: 14px;
+    border-radius: 5px;
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.25);
+    color: #2ecc71;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.session-section {
+    margin: 0 28px 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.section-title {
+    padding: 14px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #aaa;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.earnings-list {
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.earning-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+}
+
+.earning-time {
+    color: #999;
+}
+
+.earning-value {
+    color: #2ecc71;
+    font-weight: 700;
+}
+
+.empty-earnings {
+    padding: 18px;
+    text-align: center;
+    color: #777;
+    font-size: 12px;
+}
+
+.session-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 16px;
+    background: rgba(46, 204, 113, 0.06);
+}
+
+.session-total span {
+    color: #aaa;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.session-total strong {
+    color: #2ecc71;
+    font-size: 18px;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    padding: 20px 28px 24px;
+}
+
+.buttons button {
+    flex: 1;
+    height: 48px;
+    border: 0;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.buy-button {
+    background: #27ae60;
+}
+
+.buy-button:hover {
+    background: #2ecc71;
+}
+
+.exit-button {
+    background: #c0392b;
+}
+
+.exit-button:hover {
+    background: #e74c3c;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+}
+
+.sell-button {
+    background-color: #f59e0b;
+    flex: 1;
+    height: 48px;
+    border: 0;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.sell-button:hover {
+    background-color: #d97706;
+    transform: translateY(0);
+}
+
+.sell-button:active {
+    transform: translateY(0);
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGW Properties</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="property-hud" class="hidden">
+
+        <div class="hud-container">
+
+            <div class="hud-header">
+                <div>
+                    <div class="hud-label">PROPRIEDADE</div>
+                    <h1 id="property-name">---</h1>
+                </div>
+
+                <button id="close-top" class="close-button">×</button>
+            </div>
+
+            <div class="property-info">
+
+                <div class="info-box">
+                    <span>VALOR</span>
+                    <strong id="property-price">$0</strong>
+                </div>
+
+                <div class="info-box">
+                    <span>DONO ATUAL</span>
+                    <strong id="property-owner">Disponível</strong>
+                </div>
+
+                <div class="info-box highlight">
+                    <span>RENDIMENTO / 10 MIN</span>
+                    <strong id="property-payout">$0</strong>
+                </div>
+
+            </div>
+
+            <div id="session-section" class="session-section hidden">
+
+                <div class="section-title">
+                    RENDIMENTO DA SESSÃO
+                </div>
+
+                <div id="earnings-list" class="earnings-list">
+                </div>
+
+                <div class="session-total">
+                    <span>TOTAL DA SESSÃO</span>
+                    <strong id="session-total">$0</strong>
+                </div>
+
+            </div>
+
+            <div id="available-message" class="available-message hidden">
+                ESTA PROPRIEDADE ESTÁ DISPONÍVEL
+            </div>
+
+            <div class="buttons">
+
+                <button id="buy-button" class="buy-button">
+                    COMPRAR
+                </button>
+
+                <button id="sell-button" class="sell-button hidden">
+                    VENDER
+                </button>
+
+                <button id="exit-button" class="exit-button">
+                    SAIR
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

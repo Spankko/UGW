@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 description 'UGW Scoreboard - Placar e Estatísticas Permanentes'
-author 'Gustavo Spankko'
+author 'Gustavo Spankko & HanzoBR'
 version '1.1.0'
 
 ui_page 'html/index.html'
