@@ -49,39 +49,44 @@ QBCore.Functions.CreateCallback('ugw_scoreboard:server:getScoreboardData', funct
     local playersList = {}
     local activePlayers = QBCore.Functions.GetPlayers()
 
+    if #activePlayers == 0 then
+        cb({}, 0)
+        return
+    end
+
     for _, playerId in ipairs(activePlayers) do
         local Player = QBCore.Functions.GetPlayer(playerId)
         if Player then
             local citizenid = Player.PlayerData.citizenid
             
-            MySQL.single('SELECT kills, deaths FROM player_dm_stats WHERE citizenid = ?', { citizenid }, function(result)
-                local kills = result and result.kills or 0
-                local deaths = result and result.deaths or 0
-                local kd = string.format("%d/%d", kills, deaths)
+            -- CORREÇÃO DE ESTABILIDADE: Mapeamento síncrono para evitar gargalos na contagem de callbacks
+            local result = MySQL.singleSync('SELECT kills, deaths FROM player_dm_stats WHERE citizenid = ?', { citizenid })
+            
+            local kills = result and result.kills or 0
+            local deaths = result and result.deaths or 0
+            local kd = string.format("%d/%d", kills, deaths)
+            
+            -- CORREÇÃO CENTRAL: Puxando a nova propriedade de gangue injetada pelo ugw_gangs
+            local gangName = Player.PlayerData.ugw_gang or "Nenhuma"
 
-                table.insert(playersList, {
-                    id = tonumber(playerId),
-                    name = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
-                    ping = GetPlayerPing(playerId),
-                    kills = kills,
-                    deaths = deaths,
-                    kd = kd,
-                    gang = Player.PlayerData.gang.label or "Nenhuma",
-					cash = Player.PlayerData.money.cash or 0
-                })
+            table.insert(playersList, {
+                id = tonumber(playerId),
+                name = Player.PlayerData.charinfo.firstname .. " " .. Player.PlayerData.charinfo.lastname,
+                ping = GetPlayerPing(playerId),
+                kills = kills,
+                deaths = deaths,
+                kd = kd,
+                gang = string.upper(gangName), -- Transforma em maiúsculo (ex: RVT ou GTO)
+                cash = Player.PlayerData.money.cash or 0
+            })
 
-                if #playersList == #activePlayers then
-                    table.sort(playersList, function(a, b)
-                        return a.kills > b.kills
-                    end)
-                    cb(playersList, #activePlayers)
-                end
-            end)
+            if #playersList == #activePlayers then
+                table.sort(playersList, function(a, b)
+                    return a.kills > b.kills
+                end)
+                cb(playersList, #activePlayers)
+            end
         end
-    end
-
-    if #activePlayers == 0 then
-        cb({}, 0)
     end
 end)
 
@@ -91,15 +96,12 @@ AddEventHandler('ugw_scoreboard:server:updatePings', function()
     local src = source
     local pingList = {}
     
-    -- Usar GetPlayers() nativo garante que pegamos uma lista limpa apenas com os IDs (1, 2, 3...)
     local activePlayers = GetPlayers()
 
     for _, playerId in ipairs(activePlayers) do
-        -- Pega o ping real do ID e salva na lista
         pingList[tostring(playerId)] = GetPlayerPing(playerId)
     end
 
-    -- Envia a lista de pings de volta para o cliente que solicitou
     TriggerClientEvent('ugw_scoreboard:client:receivePings', src, pingList)
 end)
 

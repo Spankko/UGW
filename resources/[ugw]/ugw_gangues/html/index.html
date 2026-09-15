@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGW Gangs UI</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+
+    <!-- [TELA 1: REGISTRO / CRIAÇÃO DE ORGANIZAÇÃO] -->
+    <div id="creation-screen" class="screen hidden">
+        <div class="box">
+            <h2>Registre sua Equipe / Gangue</h2>
+            <p class="subtitle">Você não pertence a nenhuma organização. Registre uma equipe abaixo.</p>
+            
+            <div class="input-group">
+                <label>Nome Curto (TAG / ID):</label>
+                <input type="text" id="create-id" placeholder="ex: racing" maxlength="15">
+            </div>
+
+            <div class="input-group">
+                <label>Nome de Exibição (Label por Extenso):</label>
+                <input type="text" id="create-label" placeholder="ex: Racing Club" maxlength="30">
+            </div>
+
+            <p class="cost-text">Custo de Registro: <span id="creation-cost">$50.000</span></p>
+
+            <button id="btn-create-org" class="btn btn-green">Criar Organização</button>
+        </div>
+    </div>
+
+ <!-- [TELA 2: DASHBOARD GERAL DE GERENCIAMENTO] -->
+    <div id="dashboard-screen" class="screen hidden">
+        <div class="dashboard-container">
+            
+            <div class="sidebar">
+                <div class="gang-header">
+                    <!-- CORREÇÃO: Substituído o link quebrado por uma imagem transparente em SVG para não travar o Chromium do FiveM -->
+                    <img id="gang-logo" src="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='60' height='60'></svg>" alt="Logo">
+                    <h3 id="gang-title">ORGANIZAÇÃO</h3>
+                    <span class="badge" id="gang-type-badge">PLAYER</span>
+                </div>
+                <ul class="nav-tabs">
+                    <li class="tab-item active" data-tab="tab-home">Início</li>
+                    <li class="tab-item" data-tab="tab-members">Integrantes</li>
+                    <li class="tab-item" data-tab="tab-vault">Cofre</li>
+                    <li class="tab-item id-leader-only hidden" data-tab="tab-leader-admin">Gerenciamento</li>
+                </ul>
+                <button class="btn btn-close btn-red" id="btn-close-dash">Fechar Menu</button>
+            </div>
+
+            <div class="main-content">
+                
+                <div id="tab-home" class="tab-content">
+                    <h2>Estatísticas da Organização</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">Cofre Organizacional</span>
+                            <span class="stat-value" id="stat-funds">$0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Membros Online</span>
+                            <span class="stat-value" id="stat-online">0/0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Territórios Dominados</span>
+                            <span class="stat-value">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Nível de Atividade</span>
+                            <span class="stat-value">Estável</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-members" class="tab-content hidden">
+                    <div class="section-header">
+                        <h2>Membros Registrados</h2>
+                        <button id="btn-open-invite" class="btn btn-green id-invite-only">Recrutar Membro</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nome do Cidadão</th>
+                                    <th>Cargo</th>
+                                    <th>Status</th>
+                                    <th class="id-promote-only">Moderação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-list-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="tab-vault" class="tab-content hidden">
+                    <h2>Gerenciamento de Fundos</h2>
+                    <p class="subtitle-vault">Saldo Contido no Banco da Gangue: <strong id="vault-current-funds">$0</strong></p>
+                    <div class="vault-actions">
+                        <div class="vault-box">
+                            <h3>Depositar Fundos</h3>
+                            <input type="number" id="deposit-amount" placeholder="Quantia" min="1">
+                            <button id="btn-deposit" class="btn btn-green">Confirmar Depósito</button>
+                        </div>
+                        <div class="vault-box id-withdraw-only">
+                            <h3>Sacar Fundos</h3>
+                            <input type="number" id="withdraw-amount" placeholder="Quantia" min="1">
+                            <button id="btn-withdraw" class="btn btn-red">Confirmar Saque</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-leader-admin" class="tab-content hidden">
+                    <h2>Administração de Liderança (Dono)</h2>
+                    <div class="leader-settings">
+                        <div class="input-group">
+                            <label>Alterar Nome de Exibição (Label por Extenso):</label>
+                            <input type="text" id="settings-label" placeholder="Novo nome da facção">
+                        </div>
+                        <div class="input-group">
+                            <label>Link do Logotipo Customizado (URL HTTP/HTTPS):</label>
+                            <!-- CORREÇÃO: Adicionado o atributo VALUE vazio para o .value do javascript capturar corretamente o que você digita -->
+                            <input type="text" id="settings-logo" value="" placeholder="Cole o link direto da imagem terminada em .png ou .jpg">
+                        </div>
+                        <button id="btn-save-settings" class="btn btn-green">Aplicar Alterações</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- [TELA 3: PAINEL STAFF MASTER] -->
+    <div id="admin-screen" class="screen hidden">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h2>Painel Master Staff — Controle Geral de Organizações</h2>
+                <button class="btn btn-red" id="btn-close-admin">Fechar Painel</button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>TAG (ID)</th>
+                            <th>Nome da Gangue</th>
+                            <th>Tipo</th>
+                            <th>Saldo Cofre</th>
+                            <th>Qtd Online</th>
+                            <th>Inatividade</th>
+                            <th>Ações Administrativas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-gangs-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE RECRUTAMENTO -->
+    <div id="invite-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Recrutar Novo Integrante</h3>
+            <p class="subtitle" style="margin-bottom:12px;">Lista de cidadãos na sessão atual sem organização:</p>
+            <select id="invite-candidates-select">
+                <option value="">Selecione um jogador...</option>
+            </select>
+            <div class="modal-buttons">
+                <button id="btn-send-invite-action" class="btn btn-green">Enviar Convite Direto</button>
+                <button id="btn-close-invite-modal" class="btn btn-red">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POP-UP DE RECEBIMENTO DE CONVITE -->
+    <div id="invite-receive-popup" class="invite-popup hidden">
+        <div class="popup-box">
+            <h3>Convite de Organização</h3>
+            <p id="invite-receive-text">Uma organização enviou um convite de recrutamento para você.</p>
+            <div class="popup-buttons">
+                <button id="btn-accept-invite" class="btn btn-green">Aceitar Entrada</button>
+                <button id="btn-decline-invite" class="btn btn-red">Recusar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
