@@ -23,10 +23,7 @@ Os scripts combinam lógica no lado do servidor/cliente e interfaces visuais mod
 1. Baixe os arquivos do script ou clone este repositório.
 2. Coloque a pasta do script dentro do diretório `resources` do seu servidor (ex: `resources/[scripts]/nome-do-script`).
 3. Certifique-se de que a base `qb-core` está rodando antes deste script.
-4. Adicione a seguinte linha ao seu arquivo `server.cfg`:
-   ```cfg
-   ensure nome-do-script
-   ```
+4. Adicione o plugin dentro da pasta [ugw]
 5. Reinicie o seu servidor ou use `refresh` e `start nome-do-script` no console.
 
 ## ⚙️ Configuração
